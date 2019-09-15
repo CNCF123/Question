@@ -1,0 +1,44 @@
+无法访问外网
+
+检查kube-dns、weave等网络相关容器的日志，重启容器。
+使用dnstools或busybox在各个节点启动，检查网络。
+在宿主机配置转发参数。
+
+# 配置转发相关参数，否则可能会出错
+cat <<EOF > /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.conf.all.forwarding = 1
+vm.swappiness=0
+EOF
+# 使配置生效，查看输出中的相关参数是否被其它文件覆盖
+sysctl --system
+# 为防止被覆盖，可执行下面的命令
+sysctl -p /etc/sysctl.d/k8s.conf
+复制代码
+查看宿主机网卡与网桥，是否存在冲突，删除多余的。
+
+#查看网桥状态
+brctl show
+#卸载网桥上的端口
+brctl delif <网桥名> <端口名>
+#查看是否有网桥网卡名
+ifconfig
+#关闭此网卡
+ifconfig <网桥名> down
+#删除网桥
+brctl delbr <网桥名>
+复制代码
+检查宿主机iptables，weave的子网范围是否与办公网络冲突，默认为10.32.0.0/12，不需要这么多，可以改成172.16.0.0/16。
+
+  containers:
+    - name: weave
+      env:
+        - name: IPALLOC_RANGE
+          value: 172.16.0.0/16
+复制代码
+重置weave。
+
+sudo curl -L git.io/weave -o /usr/local/bin/weave
+sudo chmod a+x /usr/local/bin/weave
+weave reset
