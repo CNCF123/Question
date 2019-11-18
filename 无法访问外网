@@ -15,7 +15,7 @@ EOF
 sysctl --system
 # 为防止被覆盖，可执行下面的命令
 sysctl -p /etc/sysctl.d/k8s.conf
-复制代码
+
 查看宿主机网卡与网桥，是否存在冲突，删除多余的。
 
 #查看网桥状态
@@ -28,7 +28,7 @@ ifconfig
 ifconfig <网桥名> down
 #删除网桥
 brctl delbr <网桥名>
-复制代码
+
 检查宿主机iptables，weave的子网范围是否与办公网络冲突，默认为10.32.0.0/12，不需要这么多，可以改成172.16.0.0/16。
 
   containers:
@@ -36,7 +36,7 @@ brctl delbr <网桥名>
       env:
         - name: IPALLOC_RANGE
           value: 172.16.0.0/16
-复制代码
+
 重置weave。
 
 sudo curl -L git.io/weave -o /usr/local/bin/weave
