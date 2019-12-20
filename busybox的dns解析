@@ -1,0 +1,12 @@
+DNS解析kubernetes.default失败
+
+安装busybox进行dns检测，一直出现如下错误：
+
+kubectl exec -ti  busybox -- nslookup kubernetes.default
+=============================以下是结果============================
+Server:         10.96.0.10
+Address:        10.96.0.10:53
+** server can't find kubernetes.default: NXDOMAIN
+*** Can't find kubernetes.default: No answer
+
+新版busybox的dns解析有变化或bug，应采用旧版本busybox,  tag <= 1.28.4
