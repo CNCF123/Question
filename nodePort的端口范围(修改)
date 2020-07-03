@@ -1,5 +1,7 @@
 nodePort的端口范围
 默认范围为30000-32767，可以修改
-#/etc/kubernetes/manifests/kube-apiserver.yaml
-- --service-node-port-range=80-32767
-复制代码kubeadm会自动触发更新。
+编辑 vim /etc/kubernetes/manifests/kube-apiserver.yaml
+添加一行
+- --service-node-port-range=1-65535
+保存
+kubelet监控/etc/kubernetes/manifests/* ，会自动触发更新。
