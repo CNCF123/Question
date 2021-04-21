@@ -1,0 +1,14 @@
+准备重新设计整个构建和部署的pipelines。我们的构建过程和部署必须经历一个基于Kubernete的完整转型。
+不仅在Jenkins pipelines中进行了大量的重组，还使用了诸如Helm这样的新工具，制定新的git流和构建策略，docker 镜像的tag标签，以及版本化Helm chart。
+
+您不仅需要维护代码，还需要维护Kubernetes部署文件，Docker文件，Docker镜像，Helm Chart的策略，并设计一种将所有这些链接在一起的方法。
+
+经过几次迭代，我们决定采用以下设计。
+
+应用程序代码及其helm chart位于单独的git存储库中。这使我们可以分别对它们进行版本控制。
+
+然后，我们将helm chart版本与应用程序版本一起保存，并使用它来跟踪发布。因此，例如，使用进行app-1.2.0部署charts-1.1.0。
+如果仅更改Helm values文件，则仅更改chart的补丁程序版本。(例如，从1.1.0到1.1.1)。所有这些版本均由每个存储库中的发行说明规定RELEASE.txt。
+
+我们与构建或修改其代码的Apache Kafka或Redis之类的系统应用程序的工作方式有所不同。也就是说，我们没有两个git存储库，因为Docker tag只是Helm chart版本控制的一部分。
+如果我们曾经更改了docker tag进行升级，我们将在chart标签中增加主要版本号。
