@@ -1,0 +1,19 @@
+Liveliness和Readiness探针(双刃剑)
+
+Kubernetes的liveliness和readiness探测是自动解决系统问题的的优秀特性。他们可以在发生故障时重新启动容器，并将流量从不正常的实例中转移出去。
+但在某些故障情况下，这些探测可能成为一把双刃剑，影响应用程序的启动和恢复，尤其是消息中间件或数据库等有状态应用程序。
+
+我们的kafka系统就是受害者。我们运行了一个3 broker 3 zookeeper的状态集群，replicationFactor 为3，minInSyncReplica为2。
+当Kafka在意外系统故障或崩溃后启动时，就会发生问题。这导致它在启动期间运行其他脚本来修复损坏的索引，根据严重程度，该过程可能需要10到30分钟。
+由于增加了时间，Liveliness将不断失败，从而向Kafka发出终止信号以重新启动。这阻止了Kafka修改索引并完全启动。
+
+唯一的解决方案是配置initialDelaySeconds liveliness探针设置，以在容器启动后延迟探测。
+但是，当然，问题在于很难对此加以说明。有些恢复甚至需要一个小时，因此我们需要提供足够的空间来解决这一问题。但是增加的越多initialDelaySeconds，恢复速度就越慢，
+因为在启动失败期间，Kubernetes需要更长的时间来重新启动容器。
+
+因此，择优的方法是评估initialDelaySeconds字段的值，以便更好地平衡您在Kubernetes中寻求的弹性和应用程序在所有故障情况下(磁盘故障、网络故障、系统崩溃等)成功启动所需的时间
+
+更新*：如果您使用的是最新版本，Kubernetes引入了第三种探针类型，称为“启动探针”，以解决此问题*](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)*。
+在1.16的alpha版本和1.18的beta版本后是可用的。
+
+在容器启动之前，启动探针将禁用readiness与liveliness检查，以确保应用程序的启动不会中断。
