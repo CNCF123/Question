@@ -1,0 +1,11 @@
+  
+回顾2017-2018年度，我们有一些应用程序在Java 8上运行。它们常常难以理解像Docker这样的容器环境，并且由于堆内存问题和异常的垃圾收集而崩溃。
+我们了解到，这是由于JVM无法支持Linux cgroups和namespaces，后者是容器化技术的核心。
+
+但是，从那时起，Oracle一直在不断提高Java在容器领域的兼容性。甚至Java 8的后续补丁都引入了实验性JVM标志来解决这些问题：
+XX:+UnlockExperimentalVMOptions和XX:+UseCGroupMemoryLimitForHeap。
+
+但是，尽管有了这些改进，但不可否认的是，与Python或Go等同类产品相比，Java仍因占用内存和启动时间慢而名声不佳。主要是由JVM的内存管理引起的。
+
+今天，如果我们必须选择Java，我们会确保它的版本是11或更高。我们的Kubernetes内存限制会在比JVM最大堆内存(-Xmx)多1GB，以获得足够的空间。
+也就是说，如果JVM使用8GB作为堆内存，我们对应用程序的Kubernetes资源限制将是9GB。这样，应用将会更加健康。
